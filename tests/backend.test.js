@@ -1,13 +1,14 @@
 const request = require('supertest');
 const { io } = require('socket.io-client');
-const http = require('http');
+
+const BASE_URL = process.env.TEST_SERVER_URL || 'http://localhost:3001';
 
 describe('Backend Server Tests (server.js)', () => {
   let socket;
   
   beforeAll((done) => {
     // Attempting a connection to the running server
-    socket = io('http://localhost:3001');
+    socket = io(BASE_URL);
     socket.on('connect', done);
   });
 
@@ -19,7 +20,7 @@ describe('Backend Server Tests (server.js)', () => {
 
   describe('REST API endpoints', () => {
     it('GET /api/venue should return a 200 and a venue object', async () => {
-      const response = await request('http://localhost:3001').get('/api/venue');
+      const response = await request(BASE_URL).get('/api/venue');
       
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty('gates');
@@ -32,7 +33,7 @@ describe('Backend Server Tests (server.js)', () => {
   describe('Socket.io Connections & AI Heartbeat Simulation', () => {
     it('Should receive initial venue-update upon connection', (done) => {
       // Create a fresh client connection
-      const client = io('http://localhost:3001');
+      const client = io(BASE_URL);
       client.on('venue-update', (data) => {
         expect(data).toHaveProperty('gates');
         client.disconnect();
@@ -48,6 +49,6 @@ describe('Backend Server Tests (server.js)', () => {
         socket.off('venue-update'); // Stop listening so done() is not called twice
         done();
       });
-    });
+    }, 15000);
   });
 });

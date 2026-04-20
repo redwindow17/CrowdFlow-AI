@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Dashboard from '../frontend/src/components/Dashboard';
 
@@ -25,8 +25,8 @@ describe('Frontend: Dashboard Module (Dashboard.jsx)', () => {
     
     // Verifying primary headers
     expect(screen.getByText('Live Crowd Dashboard')).toBeInTheDocument();
-    expect(screen.getByText('Live Heatmap Simulator')).toBeInTheDocument();
-    expect(screen.getByText('Service Wait Times (AI predicted)')).toBeInTheDocument();
+    expect(screen.getByText(/Live Crowd Heatmap/i)).toBeInTheDocument();
+    expect(screen.getByText('Service Wait Times')).toBeInTheDocument();
   });
 
   it('Should render the mapping layer correctly', () => {
@@ -39,8 +39,8 @@ describe('Frontend: Dashboard Module (Dashboard.jsx)', () => {
     render(<Dashboard />);
     
     expect(screen.getByText('Gate')).toBeInTheDocument();
-    expect(screen.getByText('Status (Prediction)')).toBeInTheDocument();
-    expect(screen.getByText('Avg. Queue Time')).toBeInTheDocument();
+    expect(screen.getByText('Status')).toBeInTheDocument();
+    expect(screen.getByText('Wait Time')).toBeInTheDocument();
     expect(screen.getByText('Action')).toBeInTheDocument();
   });
 

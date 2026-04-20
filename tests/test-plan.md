@@ -34,3 +34,25 @@ This document outlines the testing scenarios and module test cases for the entir
 | **F-07** | Navigation | Fastest Gate Algorithm | `reduce()` array search correctly identifies gate object with lowest integer `.waitTime`. | Pending |
 | **F-08** | Navigation | Optimal Path UI Display | Banner says "Best Entry Route", displaying fastest gate name & wait time properly. | Pending |
 | **F-09** | Navigation | GPS Tracker Map Loading | `TileLayer` and `Polyline` trace paths are successfully drawn into the DOM container. | Pending |
+
+## 4. Challenge Evaluation Coverage Matrix
+**Scope:** Explicitly track scoring areas from challenge guidelines.
+
+| Test ID | Focus Area | Scenario / Description | Expected Result | Status |
+|---------|------------|------------------------|-----------------|--------|
+| **Q-01** | Code Quality | Static review for component modularity and naming consistency across backend/frontend | No duplicate logic hotspots; files remain readable and single-responsibility focused | Pending |
+| **Q-02** | Security | Verify no secrets/tokens are committed and runtime config uses environment variables | No credentials in tracked files; `.env` usage is documented | Pending |
+| **Q-03** | Efficiency | Verify backend emits updates on controlled interval and does not flood clients | Updates occur on expected cadence; no excessive event burst | Pending |
+| **Q-04** | Testing | Ensure backend/frontend test cases are executable and mapped to documented scenarios | Test cases are up-to-date with actual behavior and can be run reproducibly | Pending |
+| **Q-05** | Accessibility | Validate textual status cues and keyboard focus visibility in key screens | Critical UI states are understandable without color-only dependence | Pending |
+| **Q-06** | Google Services | Confirm clear and meaningful usage path of Google services in workflow/architecture | Integration rationale is documented and aligned with user value | Pending |
+
+## 5. Submission Gate Checklist
+**Scope:** Final checks before each challenge submission.
+
+| Check ID | Rule | Validation Command / Method | Expected Result | Status |
+|----------|------|-----------------------------|-----------------|--------|
+| **S-01** | Single branch only | `git branch --format="%(refname:short)"` | Only `main` is present | Pending |
+| **S-02** | Repo size < 1 MB | Sum of `git ls-files` byte sizes | Total is less than 1048576 bytes | Pending |
+| **S-03** | Public repository | Verify visibility in GitHub settings | Repository is public | Pending |
+| **S-04** | README completeness | Manual review against required sections | Vertical, logic, working, assumptions all present | Pending |

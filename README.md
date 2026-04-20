@@ -191,6 +191,71 @@ This project was built as part of the **PromptWars: Virtual** hackathon, powered
 
 ---
 
+## 📌 Challenge Vertical and Persona
+
+- **Chosen vertical:** Smart Physical Event Experience
+- **Primary persona:** Venue Operations Manager and Event Attendee
+- **Core assistant behavior:**
+    - Detect crowd risk from live venue context
+    - Recommend least-congested gates and routes
+    - Surface actionable alerts for administrators
+
+---
+
+## ✅ Submission Compliance Checklist
+
+Use this list before each submission attempt.
+
+### 1) Prerequisites
+- [ ] Google Antigravity is set up and usable
+- [ ] Git is installed and configured
+- [ ] GitHub account is active
+- [ ] You can create/manage public repositories
+
+### 2) Mandatory Rules
+- [ ] Submission attempts tracked (Warm Up max: 2)
+- [ ] Submission attempts tracked (Actual Round max: 4)
+- [ ] Repository is public
+- [ ] Repository uses one branch only (`main`)
+- [ ] Git-tracked repository size is below 1 MB
+
+### 3) Required Submission Content
+- [ ] Public GitHub repository link
+- [ ] Complete source code
+- [ ] README includes:
+    - [ ] chosen vertical
+    - [ ] approach and logic
+    - [ ] how solution works
+    - [ ] assumptions
+
+### 4) Last-Mile Verification Commands
+
+Run these checks from the project root:
+
+```powershell
+git rev-parse --abbrev-ref HEAD
+git branch --format="%(refname:short)"
+$sum = (git ls-files | ForEach-Object { (Get-Item $_).Length } | Measure-Object -Sum).Sum; $sum
+```
+
+Current local verification snapshot:
+- Active branch: `main`
+- Branch count: 1 local branch (`main`)
+- Git-tracked size: ~281422 bytes (about 275 KB)
+
+---
+
+## 🧪 Evaluation Focus Mapping
+
+- **Code Quality:** Modular frontend components and separated backend API/realtime layers.
+- **Security:** No secrets committed; environment-driven configuration via `.env`; CORS/socket config isolated in backend.
+- **Efficiency:** Incremental realtime push model with 5-second simulation ticks.
+- **Testing:** Backend and frontend test cases documented in `tests/` and test plan maintained.
+- **Accessibility:** Semantic headings, readable status labels, and color + text status cues in UI components.
+- **Google Services:** Built through Google Antigravity workflow and designed for extension with Google Cloud data services.
+
+---
+
 ## 📄 License
 
 MIT License — Built with ❤️ during PromptWars: Virtual
