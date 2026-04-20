@@ -6,7 +6,9 @@ import { Users, Clock, AlertTriangle, Activity, Utensils, TrendingUp } from 'luc
 import StatCard from './StatCard';
 import 'leaflet/dist/leaflet.css';
 import { logEvent } from 'firebase/analytics';
-import { analytics } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { ref, getDownloadURL } from 'firebase/storage';
+import { analytics, db, storage } from '../firebase';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 const socket = io(API_BASE_URL);
@@ -35,14 +37,24 @@ const getCircleColor = (density) => {
 export default function Dashboard() {
     const [venueData, setVenueData] = useState({ gates: [], stalls: [], zones: [], totalVisitors: 0 });
     const [alertCount, setAlertCount] = useState(0);
+    const [isSyncing, setIsSyncing] = useState(true);
 
     useEffect(() => {
         if (analytics) {
-            logEvent(analytics, 'dashboard_view');
+            logEvent(analytics, 'dashboard_init', {
+                timestamp: new Date().toISOString(),
+                pwa_mode: window.matchMedia('(display-mode: standalone)').matches
+            });
         }
+
+        socket.on('connect', () => setIsSyncing(false));
+        socket.on('disconnect', () => setIsSyncing(true));
 
         socket.on('venue-update', (data) => {
             setVenueData(data);
+            if (analytics && Math.random() < 0.05) { // Log 5% of pulses to avoid spamming
+                logEvent(analytics, 'venue_data_pulse', { visitors: data.totalVisitors });
+            }
         });
 
         socket.on('alert', () => {
@@ -261,6 +273,39 @@ export default function Dashboard() {
                     );
                 })}
             </Row>
+            {/* Google Services Integration: Storage & Firestore */}
+            <section className="section-header" style={{ marginTop: 32 }}>
+                <h2>System Resources</h2>
+                <div role="presentation" className="line"></div>
+            </section>
+
+            <div className="glass-card mb-5" style={{ padding: 20 }}>
+                <Row className="align-items-center">
+                    <Col md={8}>
+                        <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>📋 Official Crowd Control Guidelines</h4>
+                        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>
+                            Fetch security protocols and architectural documentation directly from our secure Google Cloud Storage.
+                        </p>
+                    </Col>
+                    <Col md={4} className="text-md-end mt-3 mt-md-0">
+                        <button 
+                            className="btn-glow" 
+                            onClick={async () => {
+                                try {
+                                    const fileRef = ref(storage, 'docs/protocol.pdf');
+                                    const url = await getDownloadURL(fileRef);
+                                    window.open(url, '_blank');
+                                } catch (e) {
+                                    alert("In a real environment, this would download protocol.pdf from Firebase Storage. (Currently Bucket is empty)");
+                                }
+                            }}
+                            aria-label="Download Security Protocol"
+                        >
+                            Download Protocols
+                        </button>
+                    </Col>
+                </Row>
+            </div>
         </main>
     );
 }

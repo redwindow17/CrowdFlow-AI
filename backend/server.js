@@ -1,3 +1,9 @@
+/**
+ * @file server.js
+ * @description Core backend for CrowdFlow AI. Handles real-time venue simulation, 
+ * security middleware, and Firebase Admin synchronization.
+ */
+
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
@@ -83,12 +89,24 @@ const isPeakHour = () => {
     return (h >= 18 && h <= 21); // evening peak
 };
 
+/**
+ * Classifies crowd status based on density percentage.
+ * @param {number} density - The current density percentage (0-100).
+ * @returns {'crowded' | 'moderate' | 'free'} The classified status string.
+ */
 const classifyStatus = (density) => {
     if (density >= 75) return 'crowded';
     if (density >= 45) return 'moderate';
     return 'free';
 };
 
+/**
+ * Pushes a new safety alert to the feed and broadcasts via Socket.io.
+ * @param {'info' | 'warning' | 'critical'} level - Severity level of the alert.
+ * @param {string} gateId - Unique identifier of the gate.
+ * @param {string} gateName - Display name of the gate.
+ * @param {string} message - Human-readable alert message.
+ */
 const pushAlert = (level, gateId, gateName, message) => {
     const alert = {
         id: alertIdCounter++,

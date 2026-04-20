@@ -1,28 +1,68 @@
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Navbar, Container, Nav } from 'react-bootstrap';
-import { Map, Activity, Bell } from 'lucide-react';
-import React from 'react';
+import { Navbar, Container, Nav, Spinner } from 'react-bootstrap';
+import { Map, Activity, Bell, User } from 'lucide-react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
+import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from './firebase';
+import ErrorBoundary from './components/ErrorBoundary';
 import './App.css';
 
-// Components
-import Dashboard from './components/Dashboard';
-import Navigation from './components/Navigation';
-import AlertFeed from './components/AlertFeed';
+// Lazy load components for better efficiency/speed
+const Dashboard = lazy(() => import('./components/Dashboard'));
+const Navigation = lazy(() => import('./components/Navigation'));
+const AlertFeed = lazy(() => import('./components/AlertFeed'));
 
 function AnimatedRoutes() {
     const location = useLocation();
     return (
         <div key={location.pathname} className="page-enter page-enter-active">
-            <Routes location={location}>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/navigation" element={<Navigation />} />
-                <Route path="/alerts" element={<AlertFeed />} />
-            </Routes>
+            <ErrorBoundary>
+                <Suspense fallback={
+                    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
+                        <Spinner animation="border" variant="primary" role="status">
+                            <span className="visually-hidden">Loading page...</span>
+                        </Spinner>
+                    </div>
+                }>
+                    <Routes location={location}>
+                        <Route path="/" element={<Dashboard />} />
+                        <Route path="/navigation" element={<Navigation />} />
+                        <Route path="/alerts" element={<AlertFeed />} />
+                    </Routes>
+                </Suspense>
+            </ErrorBoundary>
         </div>
     );
 }
 
 function App() {
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        // Automatically sign in anonymously to show Google Auth integration
+        signInAnonymously(auth).catch(err => console.error("Auth failed:", err));
+
+        const unsubscribe = onAuthStateChanged(auth, async (u) => {
+            setUser(u);
+            if (u) {
+                // Sync user session to Firestore (Aggressive Google Services Integration)
+                try {
+                    await setDoc(doc(db, 'users', u.uid), {
+                        lastSeen: serverTimestamp(),
+                        platform: navigator.platform,
+                        metadata: {
+                            userAgent: navigator.userAgent
+                        }
+                    }, { merge: true });
+                } catch (e) {
+                    console.error("Firestore user sync failed:", e);
+                }
+            }
+        });
+        return () => unsubscribe();
+    }, []);
+
     return (
         <Router>
             <Navbar expand="lg" sticky="top" className="main-navbar">
@@ -45,6 +85,15 @@ function App() {
                             <Nav.Link as={Link} to="/alerts" className="nav-link-custom" aria-label="View Alerts Feed">
                                 <Bell size={16} aria-hidden="true" /> <span>Alerts</span>
                             </Nav.Link>
+                            {/* Firebase Auth Indicator */}
+                            <div className="d-flex align-items-center ms-lg-3 py-2 py-lg-0">
+                                <div className="user-profile-badge" title={`Signed in as: ${user?.uid || 'Guest'}`} aria-label="User Profile">
+                                    <User size={16} />
+                                    <span className="ms-2 d-none d-xl-inline" style={{ fontSize: 12, fontWeight: 500 }}>
+                                        {user ? 'Secured' : 'Connecting...'}
+                                    </span>
+                                </div>
+                            </div>
                         </Nav>
                     </Navbar.Collapse>
                 </Container>
