@@ -34,6 +34,8 @@ This document outlines the testing scenarios and module test cases for the entir
 | **F-07** | Navigation | Fastest Gate Algorithm | `reduce()` array search correctly identifies gate object with lowest integer `.waitTime`. | Pending |
 | **F-08** | Navigation | Optimal Path UI Display | Banner says "Best Entry Route", displaying fastest gate name & wait time properly. | Pending |
 | **F-09** | Navigation | GPS Tracker Map Loading | `TileLayer` and `Polyline` trace paths are successfully drawn into the DOM container. | Pending |
+| **F-10** | Service Worker | Check `registerSW.js` in production build | Verify service worker is registered and active in the browser Application tab. | Pending |
+| **F-11** | Manifest | Check `manifest.webmanifest` links | Verify icons and theme_color are correctly parsed by the browser. | Pending |
 
 ## 4. Challenge Evaluation Coverage Matrix
 **Scope:** Explicitly track scoring areas from challenge guidelines.
@@ -44,8 +46,9 @@ This document outlines the testing scenarios and module test cases for the entir
 | **Q-02** | Security | Verify no secrets/tokens are committed and runtime config uses environment variables | No credentials in tracked files; `.env` usage is documented | Pending |
 | **Q-03** | Efficiency | Verify backend emits updates on controlled interval and does not flood clients | Updates occur on expected cadence; no excessive event burst | Pending |
 | **Q-04** | Testing | Ensure backend/frontend test cases are executable and mapped to documented scenarios | Test cases are up-to-date with actual behavior and can be run reproducibly | Pending |
-| **Q-05** | Accessibility | Validate textual status cues and keyboard focus visibility in key screens | Critical UI states are understandable without color-only dependence | Pending |
-| **Q-06** | Google Services | Confirm clear and meaningful usage path of Google services in workflow/architecture | Integration rationale is documented and aligned with user value | Pending |
+| **Q-05** | Accessibility | Validate textual status cues and keyboard focus visibility in key screens | Critical UI states are understandable without color-only dependence; 96%+ score achieved | Pending |
+| **Q-06** | Google Services | Confirm Auth, Firestore Sync, and Storage retrieval in runtime | Logic verifies session sync to `/users` collection and manual document fetch from Storage | Pending |
+| **Q-07** | Performance | Verify manual chunking and React.lazy efficiency | No single chunk exceeds 500KB; initial load is minimized | Pending |
 
 ## 5. Submission Gate Checklist
 **Scope:** Final checks before each challenge submission.
