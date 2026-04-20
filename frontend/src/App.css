@@ -1,0 +1,18 @@
+/* App-level layout styles (supplement to index.css design system) */
+
+.app-content {
+  padding: 24px 0 60px;
+  min-height: calc(100vh - 70px);
+}
+
+/* Route transition animation */
+.page-enter {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
