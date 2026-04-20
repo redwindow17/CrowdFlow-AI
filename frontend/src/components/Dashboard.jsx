@@ -5,8 +5,11 @@ import { MapContainer, TileLayer, CircleMarker, Tooltip } from 'react-leaflet';
 import { Users, Clock, AlertTriangle, Activity, Utensils, TrendingUp } from 'lucide-react';
 import StatCard from './StatCard';
 import 'leaflet/dist/leaflet.css';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../firebase';
 
-const socket = io('http://localhost:3001');
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const socket = io(API_BASE_URL);
 
 const getStatusColor = (status) => {
     switch (status) {
@@ -34,6 +37,10 @@ export default function Dashboard() {
     const [alertCount, setAlertCount] = useState(0);
 
     useEffect(() => {
+        if (analytics) {
+            logEvent(analytics, 'dashboard_view');
+        }
+
         socket.on('venue-update', (data) => {
             setVenueData(data);
         });
@@ -43,7 +50,7 @@ export default function Dashboard() {
         });
 
         // Fetch initial alert count
-        fetch('http://localhost:3001/api/alerts')
+        fetch(`${API_BASE_URL}/api/alerts`)
             .then(r => r.json())
             .then(data => setAlertCount(data.filter(a => !a.dismissed).length))
             .catch(() => {});
@@ -63,29 +70,29 @@ export default function Dashboard() {
         : 0;
 
     return (
-        <div>
+        <main>
             {/* Page Header */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+            <header style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                 <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Activity size={28} /> Live Crowd Dashboard
+                    <Activity size={28} aria-hidden="true" /> Live Crowd Dashboard
                 </h1>
-                <span className="live-indicator"><span className="live-dot"></span> LIVE</span>
-            </div>
+                <span className="live-indicator" aria-live="polite"><span className="live-dot"></span> LIVE</span>
+            </header>
             <p className="page-subtitle">AI-powered real-time crowd monitoring • Updates every 5 seconds</p>
 
             {/* Stat Cards Row */}
-            <Row className="g-3 mb-4">
+            <Row className="g-3 mb-4" role="region" aria-label="Quick Statistics">
                 <Col xs={6} lg={3}>
-                    <StatCard icon={<Users size={22} />} value={venueData.totalVisitors} label="Total Visitors" color="blue" />
+                    <StatCard icon={<Users size={22} aria-hidden="true" />} value={venueData.totalVisitors} label="Total Visitors" color="blue" />
                 </Col>
                 <Col xs={6} lg={3}>
-                    <StatCard icon={<Clock size={22} />} value={avgWait} label="Avg Wait Time" color="cyan" suffix=" min" />
+                    <StatCard icon={<Clock size={22} aria-hidden="true" />} value={avgWait} label="Avg Wait Time" color="cyan" suffix=" min" />
                 </Col>
                 <Col xs={6} lg={3}>
-                    <StatCard icon={<AlertTriangle size={22} />} value={alertCount} label="Active Alerts" color="red" />
+                    <StatCard icon={<AlertTriangle size={22} aria-hidden="true" />} value={alertCount} label="Active Alerts" color="red" />
                 </Col>
                 <Col xs={6} lg={3}>
-                    <StatCard icon={<TrendingUp size={22} />} value={avgDensity} label="Avg Density" color="purple" suffix="%" />
+                    <StatCard icon={<TrendingUp size={22} aria-hidden="true" />} value={avgDensity} label="Avg Density" color="purple" suffix="%" />
                 </Col>
             </Row>
 
@@ -101,9 +108,9 @@ export default function Dashboard() {
                             <MapContainer center={[51.505, -0.09]} zoom={15} style={{ height: '100%', width: '100%' }}>
                                 <TileLayer
                                     url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                                    attribution='&copy; <a href="https://carto.com/">CARTO</a>'
+                                    attribution='&copy; <a href="https://carto.carto.com/">CARTO</a>'
                                 />
-                                {venueData.gates.map((gate, i) => (
+                                {venueData.gates.map((gate) => (
                                     <CircleMarker
                                         key={gate.id}
                                         center={[gate.lat, gate.lng]}
@@ -130,7 +137,7 @@ export default function Dashboard() {
                 <Col lg={4}>
                     <div className="glass-card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Utensils size={16} style={{ color: 'var(--accent-amber)' }} />
+                            <Utensils size={16} style={{ color: 'var(--accent-amber)' }} aria-hidden="true" />
                             <strong style={{ fontSize: 15 }}>Service Wait Times</strong>
                         </div>
                         <div style={{ padding: '16px 20px', flex: 1, overflowY: 'auto' }}>
@@ -153,7 +160,7 @@ export default function Dashboard() {
                                             fontSize: 14,
                                         }}>~{stall.waitTime} min</strong>
                                     </div>
-                                    <div className="density-bar-bg">
+                                    <div className="density-bar-bg" role="progressbar" aria-valuenow={stall.waitTime} aria-valuemin="0" aria-valuemax="30" aria-label={`Wait time for ${stall.name}`}>
                                         <div
                                             className={`density-bar-fill ${stall.waitTime > 15 ? 'high' : stall.waitTime > 5 ? 'mid' : 'low'}`}
                                             style={{ width: `${Math.min(100, (stall.waitTime / 30) * 100)}%` }}
@@ -167,10 +174,10 @@ export default function Dashboard() {
             </Row>
 
             {/* Gate Status Table */}
-            <div className="section-header">
+            <section className="section-header">
                 <h2>Gate Status</h2>
-                <div className="line"></div>
-            </div>
+                <div role="presentation" className="line"></div>
+            </section>
 
             <div className="glass-card" style={{ overflow: 'hidden' }}>
                 <table className="premium-table">
@@ -197,7 +204,7 @@ export default function Dashboard() {
                                 </td>
                                 <td style={{ width: 180 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                        <div className="density-bar-bg" style={{ flex: 1 }}>
+                                        <div className="density-bar-bg" style={{ flex: 1 }} role="progressbar" aria-valuenow={gate.density} aria-valuemin="0" aria-valuemax="100" aria-label={`Density at ${gate.name}`}>
                                             <div
                                                 className={`density-bar-fill ${getDensityClass(gate.density)}`}
                                                 style={{ width: `${gate.density}%` }}
@@ -209,12 +216,12 @@ export default function Dashboard() {
                                             color: gate.density >= 70 ? 'var(--accent-red)' : gate.density >= 40 ? 'var(--accent-amber)' : 'var(--accent-green)',
                                             minWidth: 36,
                                             textAlign: 'right'
-                                        }}>{gate.density}%</span>
+                                        }} aria-hidden="true">{gate.density}%</span>
                                     </div>
                                 </td>
                                 <td>{gate.waitTime} min</td>
                                 <td>
-                                    <button className="btn-outline-glass">View Details</button>
+                                    <button className="btn-outline-glass" aria-label={`View details for ${gate.name}`}>View Details</button>
                                 </td>
                             </tr>
                         ))}
@@ -223,10 +230,10 @@ export default function Dashboard() {
             </div>
 
             {/* Zone Overview */}
-            <div className="section-header" style={{ marginTop: 32 }}>
+            <section className="section-header" style={{ marginTop: 32 }}>
                 <h2>Zone Overview</h2>
-                <div className="line"></div>
-            </div>
+                <div role="presentation" className="line"></div>
+            </section>
 
             <Row className="g-3 mb-4">
                 {venueData.zones.map(zone => {
@@ -243,7 +250,7 @@ export default function Dashboard() {
                                 <div style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 10 }}>
                                     {zone.current.toLocaleString()} / {zone.capacity.toLocaleString()} capacity
                                 </div>
-                                <div className="density-bar-bg" style={{ height: 8 }}>
+                                <div className="density-bar-bg" style={{ height: 8 }} role="progressbar" aria-valuenow={pct} aria-valuemin="0" aria-valuemax="100" aria-label={`Load for ${zone.name}`}>
                                     <div
                                         className={`density-bar-fill ${pct >= 80 ? 'high' : pct >= 50 ? 'mid' : 'low'}`}
                                         style={{ width: `${pct}%` }}
@@ -254,6 +261,6 @@ export default function Dashboard() {
                     );
                 })}
             </Row>
-        </div>
+        </main>
     );
 }

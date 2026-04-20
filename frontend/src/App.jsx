@@ -27,25 +27,23 @@ function App() {
         <Router>
             <Navbar expand="lg" sticky="top" className="main-navbar">
                 <Container>
-                    <Navbar.Brand as={Link} to="/" className="d-flex align-items-center">
+                    <Navbar.Brand as={Link} to="/" className="d-flex align-items-center" aria-label="CrowdFlow AI Home">
                         <span className="brand-text">CrowdFlow AI</span>
                         <span className="brand-dot"></span>
                     </Navbar.Brand>
-                    <Navbar.Toggle aria-controls="main-nav" style={{ borderColor: 'rgba(148,163,184,0.2)' }}>
-                        <span style={{ display: 'block', width: 20, height: 2, background: 'var(--text-secondary)', marginBottom: 4 }}></span>
-                        <span style={{ display: 'block', width: 20, height: 2, background: 'var(--text-secondary)', marginBottom: 4 }}></span>
-                        <span style={{ display: 'block', width: 20, height: 2, background: 'var(--text-secondary)' }}></span>
+                    <Navbar.Toggle aria-controls="main-nav" aria-label="Toggle navigation menu">
+                        <span className="navbar-toggler-icon-custom"></span>
                     </Navbar.Toggle>
                     <Navbar.Collapse id="main-nav">
                         <Nav className="ms-auto" style={{ gap: 4 }}>
-                            <Nav.Link as={Link} to="/" className="nav-link-custom">
-                                <Activity size={16} /> Dashboard
+                            <Nav.Link as={Link} to="/" className="nav-link-custom" aria-label="Go to Dashboard">
+                                <Activity size={16} aria-hidden="true" /> <span>Dashboard</span>
                             </Nav.Link>
-                            <Nav.Link as={Link} to="/navigation" className="nav-link-custom">
-                                <Map size={16} /> Navigation
+                            <Nav.Link as={Link} to="/navigation" className="nav-link-custom" aria-label="Go to Navigation Map">
+                                <Map size={16} aria-hidden="true" /> <span>Navigation</span>
                             </Nav.Link>
-                            <Nav.Link as={Link} to="/alerts" className="nav-link-custom">
-                                <Bell size={16} /> Alerts
+                            <Nav.Link as={Link} to="/alerts" className="nav-link-custom" aria-label="View Alerts Feed">
+                                <Bell size={16} aria-hidden="true" /> <span>Alerts</span>
                             </Nav.Link>
                         </Nav>
                     </Navbar.Collapse>

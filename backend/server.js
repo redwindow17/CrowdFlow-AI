@@ -1,18 +1,51 @@
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const { Server } = require('socket.io');
 const dotenv = require('dotenv');
+const admin = require('firebase-admin');
 
 dotenv.config();
 
+// Initialize Firebase Admin (Firestore)
+try {
+  admin.initializeApp({
+    projectId: process.env.FIREBASE_PROJECT_ID || 'crwflow-ai-6971'
+  });
+  console.log('🔥 Firebase Admin initialized successfully');
+} catch (e) {
+  console.error('⚠️ Firebase Admin failed to initialize. Ensure FIREBASE_CONFIG or ADC is set.', e.message);
+}
+
+const db = admin.apps.length ? admin.firestore() : null;
+
 const app = express();
-app.use(cors());
+
+// Security Middleware
+app.use(helmet()); // Sets various HTTP headers
+app.use(cors({
+    origin: process.env.NODE_ENV === 'production' ? ['https://crwflow-ai-6971.web.app', 'https://crwflow-ai-6971.firebaseapp.com'] : '*',
+    methods: ['GET', 'POST']
+}));
+
+const limiter = rateLimit({
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	max: 100, // Limit each IP to 100 requests per windowMs
+    standardHeaders: true,
+	legacyHeaders: false,
+});
+app.use('/api/', limiter);
+
 app.use(express.json());
 
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors: { origin: '*', methods: ['GET', 'POST'] }
+    cors: { 
+        origin: process.env.NODE_ENV === 'production' ? ['https://crwflow-ai-6971.web.app', 'https://crwflow-ai-6971.firebaseapp.com'] : '*',
+        methods: ['GET', 'POST'] 
+    }
 });
 
 // ─── Venue State ────────────────────────────────────────────────────────────
@@ -110,6 +143,14 @@ setInterval(() => {
     });
 
     io.emit('venue-update', venueData);
+
+    // Sync to Google Cloud / Firebase (Firestore) - Google Services requirement
+    if (db) {
+        db.collection('venue_analytics').doc('current_state').set({
+            ...venueData,
+            lastChecked: admin.firestore.FieldValue.serverTimestamp()
+        }).catch(err => console.debug('Firestore sync failed (expected if local auth missing)', err.message));
+    }
 }, 5000);
 
 // ─── REST Endpoints ─────────────────────────────────────────────────────────

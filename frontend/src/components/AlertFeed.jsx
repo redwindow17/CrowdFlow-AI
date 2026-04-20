@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import { AlertTriangle, Info, AlertCircle, X, Bell } from 'lucide-react';
 
-const socket = io('http://localhost:3001');
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const socket = io(API_BASE_URL);
 
 const iconMap = {
-    critical: <AlertTriangle size={18} />,
-    warning: <AlertCircle size={18} />,
-    info: <Info size={18} />,
+    critical: <AlertTriangle size={18} aria-hidden="true" />,
+    warning: <AlertCircle size={18} aria-hidden="true" />,
+    info: <Info size={18} aria-hidden="true" />,
 };
 
 const colorMap = {
@@ -29,7 +30,7 @@ export default function AlertFeed() {
 
     useEffect(() => {
         // Fetch existing alerts on mount
-        fetch('http://localhost:3001/api/alerts')
+        fetch(`${API_BASE_URL}/api/alerts`)
             .then(r => r.json())
             .then(data => setAlerts(data.filter(a => !a.dismissed)))
             .catch(() => {});
@@ -48,7 +49,7 @@ export default function AlertFeed() {
     const dismiss = async (id) => {
         setAlerts(prev => prev.filter(a => a.id !== id));
         try {
-            await fetch(`http://localhost:3001/api/alerts/${id}/dismiss`, { method: 'POST' });
+            await fetch(`${API_BASE_URL}/api/alerts/${id}/dismiss`, { method: 'POST' });
         } catch {}
     };
 
@@ -62,21 +63,23 @@ export default function AlertFeed() {
     };
 
     return (
-        <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+        <main>
+            <header style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                 <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Bell size={28} /> Alert Feed
+                    <Bell size={28} aria-hidden="true" /> Alert Feed
                 </h1>
-                <span className="live-indicator"><span className="live-dot"></span> LIVE</span>
-            </div>
+                <span className="live-indicator" aria-live="polite"><span className="live-dot"></span> LIVE</span>
+            </header>
             <p className="page-subtitle">Real-time AI-generated crowd safety alerts and notifications</p>
 
             {/* Filter Pills */}
-            <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
+            <nav style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }} aria-label="Filter alerts">
                 {['all', 'critical', 'warning', 'info'].map(f => (
                     <button
                         key={f}
                         onClick={() => setFilter(f)}
+                        aria-pressed={filter === f}
+                        aria-label={`Show ${f} alerts (${counts[f]})`}
                         style={{
                             padding: '6px 16px',
                             borderRadius: 20,
@@ -94,24 +97,24 @@ export default function AlertFeed() {
                         {f} ({counts[f]})
                     </button>
                 ))}
-            </div>
+            </nav>
 
             {/* Alert List */}
-            <div className="glass-card" style={{ padding: 16 }}>
+            <section className="glass-card" style={{ padding: 16 }} aria-label="Alerts List">
                 {filtered.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
-                        <AlertCircle size={40} style={{ opacity: 0.3, marginBottom: 12 }} />
+                        <AlertCircle size={40} style={{ opacity: 0.3, marginBottom: 12 }} aria-hidden="true" />
                         <p>No alerts to display</p>
                     </div>
                 ) : (
                     filtered.map(alert => (
-                        <div key={alert.id} className={`alert-item ${alert.level}`}>
+                        <article key={alert.id} className={`alert-item ${alert.level}`} aria-labelledby={`alert-title-${alert.id}`}>
                             <div style={{ color: colorMap[alert.level], flexShrink: 0, marginTop: 2 }}>
                                 {iconMap[alert.level]}
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                                    <span style={{
+                                    <span id={`alert-title-${alert.id}`} style={{
                                         fontWeight: 600,
                                         fontSize: 13,
                                         color: colorMap[alert.level],
@@ -121,7 +124,7 @@ export default function AlertFeed() {
                                         {alert.level} — {alert.gateName}
                                     </span>
                                     <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                                        {timeAgo(alert.timestamp)}
+                                        <time>{timeAgo(alert.timestamp)}</time>
                                     </span>
                                 </div>
                                 <p style={{ margin: 0, fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
@@ -130,6 +133,7 @@ export default function AlertFeed() {
                             </div>
                             <button
                                 onClick={() => dismiss(alert.id)}
+                                aria-label={`Dismiss alert from ${alert.gateName}`}
                                 style={{
                                     background: 'transparent',
                                     border: 'none',
@@ -144,12 +148,12 @@ export default function AlertFeed() {
                                 onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}
                                 title="Dismiss"
                             >
-                                <X size={16} />
+                                <X size={16} aria-hidden="true" />
                             </button>
-                        </div>
+                        </article>
                     ))
                 )}
-            </div>
-        </div>
+            </section>
+        </main>
     );
 }
